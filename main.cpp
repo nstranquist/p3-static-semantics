@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "node.h"
 #include "printTree.h"
+#include "symbolTable.h"
 
 using namespace std;
 
@@ -80,7 +81,10 @@ int main(int argc, char *argv[])
     root_node = parser.parser(in);
     // 3. Call printTree() from printTree.cpp
     PrintTree printTree;
-    printTree.printTree(root_node);
+    // printTree.printTree(root_node);
+
+    printTree.semanticAnalyze(root_node);
+
     return 0;
   }
   catch (invalid_argument &e) {
