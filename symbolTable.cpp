@@ -40,6 +40,25 @@ int SymbolTable::find(string identifierName) {
   return distanceFromTop;
 }
 
+int SymbolTable::findGlobal(string identifierName) {
+  int distanceFromTop = -1;
+
+  // Iterate over all vars in the Symbol Table
+  for(vector<Symbol*>::iterator t = this->globalIdentifiers.begin(); t!= this->globalIdentifiers.end(); ++t) {
+    if(identifierName == (*t)->identifierName) {
+      cout << "found matching global variable for token with instance: " << (*t)->identifierName << endl;
+      distanceFromTop = (*t)->scopeLevel;
+      return distanceFromTop;
+    }
+  }
+
+    // find first occurrence of the argument on the stack (top to bottom)
+
+    // return the distance from the top of stack, where 0 is top of stack, -1 is not found
+
+  return distanceFromTop;
+}
+
 // int SymbolTable::verifyGlobal(Token *token) {
 //   int found = 0;
 //   // find tokenInstance in globals. iterate

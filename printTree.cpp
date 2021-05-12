@@ -57,84 +57,47 @@ void PrintTree::scanPreorder(Node *root, int level) {
     size_t i = 0;
     for(vector<Token*>::iterator t = root->tokens.begin(); t != root->tokens.end(); ++t) {
       cout << (*t)->tokenInstance << " ";
-      // if(this->symbolTable.isBeforeMain) {
-      //   cout << "is before main" << endl;
-      //   if((*t)->tokenInstance == "main") {
-      //     this->symbolTable.isBeforeMain = false;
-      //     cout << "is at main" << endl;
-      //   }
-      //   else if ((*t)->tokenID == IDENT_tk) {
-      //     cout << "is identifier" << endl;
-
-      //     Symbol *globalSymbol = this->symbolTable.createSymbol(*t);
-          
-      //     this->symbolTable.globalIdentifiers.push_back(globalSymbol);
-      //   }
-      //   else {
-      //     cout << "is not main, is not identifier, but still in parse tree...? Error?" << endl;
-      //     cout << "instance: " << (*t)->tokenInstance << endl;
-      //   }
-      // }
-      // else {
-        // if((*t)->tokenID == IDENT_tk) {
-          if(root->label == "vars") {
-            if((*t)->tokenID == IDENT_tk) {
-              cout << "is 'identifier' declaration" << endl;
-              if(this->symbolTable.varCount > 0) {
-                int found = this->symbolTable.find((*t)->tokenInstance);
-                cout << "found value: " << found << endl;
-                if(found >= 0 && found < this->symbolTable.varCounts.at(found)) {
-                  cout << "Error: This variable is already defined in this scope" << endl;
-                }
-              }
-              Symbol *symbol = this->symbolTable.createSymbol(*t);
-              if(this->symbolTable.blockCount == 0) {
-                this->symbolTable.globalIdentifiers.push_back(symbol);
-              }
-              else {
-                this->symbolTable.push(symbol);
-              }
-              this->symbolTable.varCount++;
+      if(root->label == "vars") {
+        if((*t)->tokenID == IDENT_tk) {
+          cout << "is 'identifier' declaration" << endl;
+          if(this->symbolTable.varCount > 0) {
+            int found = this->symbolTable.find((*t)->tokenInstance);
+            cout << "found value: " << found << endl;
+            if(found >= 0 && found < this->symbolTable.varCounts.at(found)) {
+              string errorMessage = "Error: Variable " + (*t)->tokenInstance + " at line #";
+              errorMessage +=  to_string((*t)->lineNumber);
+              errorMessage += " is already defined in this scope";
+              throw invalid_argument(errorMessage);
             }
-            // else {
-            //   cout << "Error: Variables can only be declared in <vars>. Use 'data' to do this." << endl;
-            // }
+          }
+          Symbol *symbol = this->symbolTable.createSymbol(*t);
+          if(this->symbolTable.blockCount == 0) {
+            this->symbolTable.globalIdentifiers.push_back(symbol);
           }
           else {
-            if((*t)->tokenID == IDENT_tk) {
-              cout << "is identifier token. is being used" << endl;
-              int found = this->symbolTable.find((*t)->tokenInstance);
-              if(found == -1) {
-                cout << "could check globals, but we aren't using those" << endl;
-                cout << "Error: Variable not found in scope" << endl;
-                // int globalFound = this->symbolTable.verifyGlobal(*t);
-                // if(globalFound == 0) {
-                //   cout << "Error: variable not found in local or global scope. Must define before using" << endl;
-                //   cout << (*t)->tokenInstance << " at line #" << (*t)->lineNumber << endl;
-                // }
-                // else {
-                //   cout << "The variable was found in globals. We are OK" << endl;
-                // }
-              }
+            this->symbolTable.push(symbol);
+          }
+          this->symbolTable.varCount++;
+        }
+      }
+      else {
+        if((*t)->tokenID == IDENT_tk) {
+          cout << "is identifier token. is being used" << endl;
+          int found = this->symbolTable.find((*t)->tokenInstance);
+          if(found == -1) {
+            int globalFound = this->symbolTable.findGlobal((*t)->tokenInstance);
+            if(globalFound == -1) {
+              string errorMessage = "Error: Variable " + (*t)->tokenInstance + " on line #";
+              errorMessage += to_string((*t)->lineNumber);
+              errorMessage += " was not found in scope";
+              throw invalid_argument(errorMessage);
+            }
+            else {
+              cout << "the variable was found in the globals. We are OK" << endl;
             }
           }
-        // }
-        
-        if ((*t)->tokenInstance == "begin") {
-          cout << "begin block found" << endl;
-          // this->symbolTable.varCount = 0;
-          // this->symbolTable.blockCount++;
         }
-        else if ((*t)->tokenInstance == "end") {
-          cout << "end block found" << endl;
-          // this->symbolTable.blockCount--;
-          // // pop varCount number of times
-          // for(int i = this->symbolTable.varCount; i>0; i--) {
-          //   this->symbolTable.pop();
-          // }
-          // this->symbolTable.varCount = 0;
-        }
-      // }
+      }
       ++i;
 
       // If is before <main>
@@ -155,34 +118,6 @@ void PrintTree::scanPreorder(Node *root, int level) {
         // If is <end> block
           // call pop() varCount number of times
           // reset varCount = 0; (or pop from vector if using that option)
-
-      // If is Identifier
-      // if((*t)->tokenID==IDENT_tk) {
-      //   // If Is vars, insert, else, verify
-      //   if(isVars) {
-      //     cout << "is vars, checking then inserting" << endl;
-      //     // If exists, throw error
-      //     int levelFound = this->symbolTable.verify((*t)->tokenInstance);
-      //     if(levelFound >= 0 && levelFound < this->varCount) {
-      //       string errorMessage = "Error: Identifier '" + (*t)->tokenInstance + "' is already in use on line #";
-      //       errorMessage +=  (*t)->lineNumber;
-      //       throw invalid_argument(errorMessage);
-      //     }
-      //     // else, insert into table
-      //     else {
-      //       this->symbolTable.insert((*t)->tokenInstance);
-      //     }
-      //   }
-      //   else {
-      //     cout << "is not vars, verifying" << endl;
-      //     int levelFound = this->symbolTable.verify((*t)->tokenInstance);
-      //     if(levelFound) {
-      //       // Throw Error:
-      //       cout << "ERROR: Identifier '" << (*t)->tokenInstance << "' is already being used" << endl;
-      //     }
-      //   }
-      // }
-      // ++i;
     }
   }
   cout << "\n";

@@ -19,6 +19,7 @@ class SymbolTable {
     void push(Symbol *symbol); // string identifierName, int lineNumber, tokenIDs tokenID, int scopeLevel
     void pop();
     int find(string identifierName); // , int lineNumber, tokenIDs tokenID
+    int findGlobal(string identifierName);
     // void insert(string identifierName); 
     int verifyGlobal(Token *token);
     void printStack(vector<Symbol*> symbolList);
