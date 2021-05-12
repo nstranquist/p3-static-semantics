@@ -51,8 +51,18 @@ void PrintTree::scanPreorder(Node *root, int level) {
       if((*t)->tokenID==IDENT_tk) {
         // If Is vars, insert, else, verify
         if(isVars) {
-          cout << "is vars, inserting" << endl;
-          this->symbolTable.insert((*t)->tokenInstance);
+          cout << "is vars, checking then inserting" << endl;
+          // If exists, throw error
+          bool isFound = this->symbolTable.verify((*t)->tokenInstance);
+          if(isFound) {
+            string errorMessage = "Error: Identifier '" + (*t)->tokenInstance + "' is already in use on line #";
+            errorMessage +=  (*t)->lineNumber;
+            throw invalid_argument(errorMessage);
+          }
+          // else, insert into table
+          else {
+            this->symbolTable.insert((*t)->tokenInstance);
+          }
         }
         else {
           cout << "is not vars, verifying" << endl;
