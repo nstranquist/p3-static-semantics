@@ -52,13 +52,44 @@ void PrintTree::scanPreorder(Node *root, int level) {
   }
 
   if(root->tokens.size() > 0) {
+    // To keep track of correct variable usage
+    bool previousData = false;
+    bool previousIdentifier = false;
+    bool previousAssign = false;
+
     cout << ": ";
     // Print All Token Values
     size_t i = 0;
     for(vector<Token*>::iterator t = root->tokens.begin(); t != root->tokens.end(); ++t) {
       cout << (*t)->tokenInstance << " ";
       if(root->label == "vars") {
+        // Check that data -> identifier -> assign is used correctly for the variable
+        if(previousData) {
+          if((*t)->tokenID != IDENT_tk) {
+            string errorMessage = "Error: Identifier expected after 'data' keyword on line #" + to_string((*t)->lineNumber);
+            throw invalid_argument(errorMessage);
+          }
+        }
+        if(previousIdentifier) {
+          if((*t)->tokenInstance != ":=") {
+            string errorMessage = "Error: Assign statement ':=' expected after [identifier] on line #" + to_string((*t)->lineNumber);
+            throw invalid_argument(errorMessage);
+          }
+        }
+        if(previousAssign) {
+          cout << "next token should be an integer" << endl;
+          if((*t)->tokenID != NUM_tk) {
+            string errorMessage = "Error: Numeric token expected after [assign] on line #" + to_string((*t)->lineNumber);
+            throw invalid_argument(errorMessage);
+          }
+        }
+
         if((*t)->tokenID == IDENT_tk) {
+          if(!previousData) {
+            string errorMessage = "Error: Identifier used in <vars> before 'data' keyword being used on line #" + to_string((*t)->lineNumber);
+            throw invalid_argument(errorMessage);
+          }
+          previousIdentifier = true;
           cout << "is 'identifier' declaration" << endl;
           if(this->symbolTable.varCount > 0) {
             int found = this->symbolTable.find((*t)->tokenInstance);
@@ -79,6 +110,23 @@ void PrintTree::scanPreorder(Node *root, int level) {
           }
           this->symbolTable.varCount++;
         }
+        else {
+          previousIdentifier = false;
+        }
+
+        if((*t)->tokenInstance == "data") {
+          previousData = true;
+        }
+        else {
+          previousData = false;
+        }
+
+        if((*t)->tokenInstance == ":=") {
+          previousAssign = true;
+        }
+        else {
+          previousAssign = false;
+        }
       }
       else {
         if((*t)->tokenID == IDENT_tk) {
@@ -98,6 +146,7 @@ void PrintTree::scanPreorder(Node *root, int level) {
           }
         }
       }
+
       ++i;
 
       // If is before <main>
