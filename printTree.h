@@ -13,6 +13,7 @@ class PrintTree {
 
   private:
     SymbolTable symbolTable;
+    int stackLevel;
 };
 
 #endif
